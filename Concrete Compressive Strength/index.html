@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concrete Strength Predictor (Light)</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'light-bg': '#f3f4f6',         /* Light page background (Gray 100) */
+                        'light-card': '#ffffff',       /* White card background */
+                        'dark-text': '#1f2937',        /* Dark text for general use */
+                        // Keeping 'water-light' for the result text color
+                        'water-light': '#10b981',      /* Vibrant green for result (Emerald 500) */
+                        
+                        // Custom Input Colors for High Contrast in Light Mode
+                        'input-border': '#d1d5db',     /* Border for inputs (Gray 300) */
+                        'input-bg-lighter': '#f9fafb', /* Very light input background (Gray 50) */
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        #import from {scr:"http://localhost:8888/notebooks/PROJECTS/Civil%20Project/Code.ipynb"}
+        /* Custom styles for better aesthetics */
+        /* Input Field: STATIC BORDER IS NOW Emerald-500 (Green Outline) */
+        .input-field {
+            /* Now using standard Tailwind classes for Emerald color: border-emerald-500, focus:ring-emerald-500, focus:border-emerald-600 */
+            @apply w-full p-3 border border-emerald-500 bg-input-bg-lighter text-dark-text rounded-lg 
+                   focus:ring-emerald-500 focus:border-emerald-600 transition duration-150 shadow-sm font-semibold; 
+        }
+    </style>
+</head>
+<body class="bg-light-bg min-h-screen flex items-center justify-center p-4 font-sans text-dark-text">
+
+    <div class="w-full max-w-2xl bg-light-card shadow-xl rounded-xl p-8 md:p-10 border border-gray-200">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-dark-text mb-2">Concrete Strength Predictor</h1>
+            <p class="text-gray-500">Estimate the Compressive Strength (MPa) based on mix design and curing age.</p>
+        </header>
+
+        <main>
+            <form id="predictionForm" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Cement --><div>
+                    <!-- Updated label to use correct LaTeX for units -->
+                    <label for="cement" class="block text-sm font-medium text-gray-700 mb-1">Cement (kg in a m3 mixture)</label>
+                    <input type="number" id="cement" value="300" min="100" class="input-field" required>
+                </div>
+                <!-- Blast Furnace Slag --><div>
+                    <!-- Updated label to use correct LaTeX for units -->
+                    <label for="slag" class="block text-sm font-medium text-gray-700 mb-1">Blast Furnace Slag (kg in a m3 mixture)</label>
+                    <input type="number" id="slag" value="50" min="0" class="input-field" required>
+                </div>
+                <!-- Fly Ash --><div>
+                    <!-- Updated label to use correct LaTeX for units -->
+                    <label for="ash" class="block text-sm font-medium text-gray-700 mb-1">Fly Ash (kg in a m3 mixture)</label>
+                    <input type="number" id="ash" value="0" min="0" class="input-field" required>
+                </div>
+                <!-- Water --><div>
+                    <!-- Updated label to use correct LaTeX for units -->
+                    <label for="water" class="block text-sm font-medium text-gray-700 mb-1">Water (kg in a m3 mixture)</label>
+                    <input type="number" id="water" value="175" min="100" class="input-field" required>
+                </div>
+                <!-- Superplasticizer --><div>
+                    <!-- Updated label to use correct LaTeX for units -->
+                    <label for="superplasticizer" class="block text-sm font-medium text-gray-700 mb-1">Superplasticizer (kg in a m3 mixture)</label>
+                    <input type="number" id="superplasticizer" value="5" min="0" step="0.1" class="input-field" required>
+                </div>
+                <!-- Coarse Aggregate --><div>
+                    <!-- Updated label to use correct LaTeX for units -->
+                    <label for="coarseAgg" class="block text-sm font-medium text-gray-700 mb-1">Coarse Aggregate (kg in a m3 mixture)</label>
+                    <input type="number" id="coarseAgg" value="1000" min="800" class="input-field" required>
+                </div>
+                <!-- Fine Aggregate --><div>
+                    <!-- Updated label to use correct LaTeX for units -->
+                    <label for="fineAgg" class="block text-sm font-medium text-gray-700 mb-1">Fine Aggregate (kg in a m3 mixture)</label>
+                    <input type="number" id="fineAgg" value="700" min="500" class="input-field" required>
+                </div>
+                <!-- Age --><div>
+                    <label for="age" class="block text-sm font-medium text-gray-700 mb-1">Age (Days)</label>
+                    <input type="number" id="age" value="28" min="1" max="365" class="input-field" required>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="sm:col-span-2 mt-4">
+                    <!-- Changed from bg-cement-blue/blue-600/blue-400 to bg-emerald-500/emerald-600/emerald-400 -->
+                    <button type="submit" id="predictBtn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl transition duration-300 transform hover:scale-[1.01] shadow-lg shadow-emerald-400/30">
+                        Predict Strength
+                    </button>
+                </div>
+            </form>
+
+            <!-- Result Display --><div id="result" class="mt-8 p-6 bg-gray-100 rounded-xl shadow-inner text-center border border-gray-300">
+                <p class="text-lg font-semibold text-gray-800">Predicted Compressive Strength:</p>
+                <p id="strengthValue" class="text-5xl font-extrabold text-water-light mt-2 transition duration-500 ease-in-out">
+                </p>
+                <p class="text-sm text-gray-500 mt-2 italic">
+                    (Prediction is based on a simplified linear model for demonstration)
+                </p>
+            </div> 
+            <p>© Divyansh Singh 2025</p>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // 1. Get Input Values (Note: all inputs are required, so simple extraction is fine)
+            const inputs = {
+                cement: parseFloat(document.getElementById('cement').value),
+                slag: parseFloat(document.getElementById('slag').value),
+                ash: parseFloat(document.getElementById('ash').value),
+                water: parseFloat(document.getElementById('water').value),
+                superplasticizer: parseFloat(document.getElementById('superplasticizer').value),
+                coarseAgg: parseFloat(document.getElementById('coarseAgg').value),
+                fineAgg: parseFloat(document.getElementById('fineAgg').value),
+                age: parseFloat(document.getElementById('age').value)
+            };
+
+            // 2. Perform Prediction (Simulated ML Model Logic)
+            // NOTE: In a real-world scenario, this calculation would be replaced by
+            // a deployed model (e.g., calling a Python/TensorFlow server endpoint).
+            // This JS function uses an approximation based on known material science principles
+            // (e.g., Cement and Age are positive predictors, Water is a strong negative predictor).
+            
+            // Simplified Linear Model (Coefficients are chosen to provide reasonable results)
+            let predictedStrength = (
+                (inputs.cement * 0.15) +          // Cement positively contributes to strength
+                (inputs.slag * 0.08) +            // Slag contributes
+                (inputs.ash * 0.05) +             // Fly Ash contributes
+                (inputs.superplasticizer * 0.3) + // Superplasticizer improves workability/strength ratio
+                (inputs.age * 0.25) -             // Age significantly increases strength (logarithmic, but linear for simplification)
+                (inputs.water * 0.2) +            // Water has a strong negative effect (w/c ratio)
+                (inputs.coarseAgg * 0.005) +      // Aggregate type/amount has minor effect
+                (inputs.fineAgg * 0.005)          // Aggregate type/amount has minor effect
+            );
+
+            // Add an intercept (baseline strength) and ensure strength is not negative
+            predictedStrength = Math.max(0, predictedStrength + 10.0);
+
+            // Cap the maximum realistic strength for common mixes
+            predictedStrength = Math.min(85.0, predictedStrength);
+
+            // 3. Display Result
+            const strengthValueElement = document.getElementById('strengthValue');
+            
+            // Update the display with the calculated value
+            strengthValueElement.textContent = `${predictedStrength.toFixed(2)} MPa`;
+            
+            // Add a temporary animation effect
+            strengthValueElement.classList.add('animate-pulse');
+            setTimeout(() => {
+                strengthValueElement.classList.remove('animate-pulse');
+            }, 500);
+        });
+
+        // Function to handle initial model training simulation (for better user experience)
+        window.onload = function() {
+            // In a real application, a full ML model would be loaded/trained here, 
+            // but for this single-file demo, we ensure all elements are ready.
+            console.log("Web Application Ready. Model simulation active.");
+        };
+    </script>
+</body>
+</html>
